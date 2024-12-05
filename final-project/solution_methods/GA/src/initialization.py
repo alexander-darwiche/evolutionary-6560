@@ -29,6 +29,8 @@ def initialize_run(jobShopEnv, **kwargs):
             - stats: Statistics object for tracking evolution progress.
             - hof: Hall of fame to store the best individuals.
     """
+
+    
     # Set random seed
     set_seeds(kwargs["algorithm"].get("seed", None))
 

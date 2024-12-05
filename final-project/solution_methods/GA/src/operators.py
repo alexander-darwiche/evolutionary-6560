@@ -57,7 +57,7 @@ def init_individual(ind_class, jobShopEnv):
         jobShopEnv = local_load_balancing_scheduler(jobShopEnv)
     else:  # 10% initial assignment with random scheduler
         jobShopEnv = random_scheduler(jobShopEnv)
-
+    import pdb;pdb.set_trace()
     # get the operation sequence and machine allocation lists
     operation_sequence = [operation.job_id for operation in jobShopEnv.scheduled_operations]
     machine_selection = [
@@ -97,18 +97,18 @@ def evaluate_individual(individual, jobShopEnv: JobShop, reset=True):
 def evaluate_population(toolbox, population):
     # start_time = time.time()
 
+    
     # sequential evaluation of population
-    # population = [[ind[0], ind[1]] for ind in population]
-    # fitnesses = [toolbox.evaluate_individual(ind) for ind in population]
-    # fitnesses = [(fit[0],) for fit in fitnesses]
-
-    # parallel evaluation of population
     population = [[ind[0], ind[1]] for ind in population]
-    fitnesses = toolbox.map(toolbox.evaluate_individual, population)
+    fitnesses = [toolbox.evaluate_individual(ind) for ind in population]
     fitnesses = [(fit[0],) for fit in fitnesses]
 
-    return fitnesses
+    # parallel evaluation of population
+    # population = [[ind[0], ind[1]] for ind in population]
+    # fitnesses = toolbox.map(toolbox.evaluate_individual, population)
+    # fitnesses = [(fit[0],) for fit in fitnesses]
 
+    return fitnesses
 
 def variation(population, toolbox, pop_size, cr, indpb):
     offspring = []
@@ -120,7 +120,9 @@ def variation(population, toolbox, pop_size, cr, indpb):
                 ind1[0], ind2[0] = toolbox.mate_TwoPoint(ind1[0], ind2[0])
             else:
                 ind1[0], ind2[0] = toolbox.mate_Uniform(ind1[0], ind2[0])
-
+            
+            has_non_zero = any(x != 0 for x in ind1[0])
+            if (has_non_zero): import pdb;pdb.set_trace()
             ind1[1], ind2[1] = toolbox.mate_POX(ind1[1], ind2[1])
             del ind1.fitness.values, ind2.fitness.values
 

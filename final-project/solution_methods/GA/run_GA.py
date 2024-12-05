@@ -79,56 +79,56 @@ def run_GA(jobShopEnv, population, toolbox, stats, hof, **kwargs):
     return makespan, jobShopEnv
 
 
-def main(param_file=PARAM_FILE):
-    try:
-        parameters = load_parameters(param_file)
-        logging.info(f"Parameters loaded from {param_file}.")
-    except FileNotFoundError:
-        logging.error(f"Parameter file {param_file} not found.")
-        return
+# # def main(param_file=PARAM_FILE):
+# #     try:
+# #         parameters = load_parameters(param_file)
+# #         logging.info(f"Parameters loaded from {param_file}.")
+# #     except FileNotFoundError:
+# #         logging.error(f"Parameter file {param_file} not found.")
+# #         return
 
-    # Load the job shop environment, and initialize the genetic algorithm
-    jobShopEnv = load_job_shop_env(parameters['instance'].get('problem_instance'))
-    population, toolbox, stats, hof = initialize_run(jobShopEnv, **parameters)
-    makespan, jobShopEnv = run_GA(jobShopEnv, population, toolbox, stats, hof, **parameters)
+# #     # Load the job shop environment, and initialize the genetic algorithm
+# #     jobShopEnv = load_job_shop_env(parameters['instance'].get('problem_instance'))
+# #     population, toolbox, stats, hof = initialize_run(jobShopEnv, **parameters)
+# #     makespan, jobShopEnv = run_GA(jobShopEnv, population, toolbox, stats, hof, **parameters)
 
-    if makespan is not None:
-        # Check output configuration and prepare output paths if needed
-        output_config = parameters['output']
-        save_gantt = output_config.get('save_gantt')
-        save_results = output_config.get('save_results')
-        show_gantt = output_config.get('show_gantt')
+# #     # if makespan is not None:
+# #     #     # Check output configuration and prepare output paths if needed
+# #     #     output_config = parameters['output']
+# #     #     save_gantt = output_config.get('save_gantt')
+# #     #     save_results = output_config.get('save_results')
+# #     #     show_gantt = output_config.get('show_gantt')
 
-        if save_gantt or save_results:
-            output_dir, exp_name = output_dir_exp_name(parameters)
-            output_dir = os.path.join(output_dir, f"{exp_name}")
-            os.makedirs(output_dir, exist_ok=True)
+# #     #     if save_gantt or save_results:
+# #     #         output_dir, exp_name = output_dir_exp_name(parameters)
+# #     #         output_dir = os.path.join(output_dir, f"{exp_name}")
+# #     #         os.makedirs(output_dir, exist_ok=True)
 
-        # Plot Gantt chart if required
-        if show_gantt or save_gantt:
-            logging.info("Generating Gantt chart.")
-            plt = plot_gantt_chart(jobShopEnv)
+# #     #     # Plot Gantt chart if required
+# #     #     if show_gantt or save_gantt:
+# #     #         logging.info("Generating Gantt chart.")
+# #     #         plt = plot_gantt_chart(jobShopEnv)
 
-            if save_gantt:
-                plt.savefig(output_dir + "/gantt.png")
-                logging.info(f"Gantt chart saved to {output_dir}")
+# #     #         if save_gantt:
+# #     #             plt.savefig(output_dir + "/gantt.png")
+# #     #             logging.info(f"Gantt chart saved to {output_dir}")
 
-            if show_gantt:
-                plt.show()
+# #     #         if show_gantt:
+# #     #             plt.show()
 
-        # Save results if enabled
-        if save_results:
-            results_saving(makespan, output_dir, parameters)
-            logging.info(f"Results saved to {output_dir}")
+# #     #     # Save results if enabled
+# #     #     if save_results:
+# #     #         results_saving(makespan, output_dir, parameters)
+# #     #         logging.info(f"Results saved to {output_dir}")
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run GA")
-    parser.add_argument(
-        "-f", "--config_file",
-        type=str,
-        default=PARAM_FILE,
-        help="path to configuration file",
-    )
-    args = parser.parse_args()
-    main(param_file=args.config_file)
+# if __name__ == "__main__":
+#     parser = argparse.ArgumentParser(description="Run GA")
+#     parser.add_argument(
+#         "-f", "--config_file",
+#         type=str,
+#         default=PARAM_FILE,
+#         help="path to configuration file",
+#     )
+#     args = parser.parse_args()
+#     main(param_file=args.config_file)

@@ -38,7 +38,6 @@ class Machine:
 
     def add_operation_to_schedule(self, operation: Operation, processing_time, sequence_dependent_setup_times):
         """Add an operation to the scheduled operations list without backfilling at earliest possible time."""
-
         # find max finishing time predecessors
         finishing_time_predecessors = operation.finishing_time_predecessors
         finishing_time_machine = max([operation.scheduled_end_time for operation in self.scheduled_operations],default=0)

@@ -210,6 +210,7 @@ class JobShop:
             raise ValueError(
                 f"Invalid machine ID {machine_id}")
         machine.add_operation_to_schedule(operation, duration, self._sequence_dependent_setup_times)
+        self.mark_operation_as_scheduled(operation)
 
     def schedule_operation_with_backfilling(self, operation: Operation, machine_id, duration) -> None:
         """Schedule an operation"""

@@ -178,4 +178,4 @@ def draw_precedence_relations(JobShop: JobShop):
     fig.set_size_inches(16, 8)
 
     plt.axis("off")
-    plt.show()
+    return plt
