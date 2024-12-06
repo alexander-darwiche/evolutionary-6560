@@ -57,7 +57,7 @@ def init_individual(ind_class, jobShopEnv):
         jobShopEnv = local_load_balancing_scheduler(jobShopEnv)
     else:  # 10% initial assignment with random scheduler
         jobShopEnv = random_scheduler(jobShopEnv)
-
+    import pdb;pdb.set_trace()
     # get the operation sequence and machine allocation lists
     operation_sequence = [operation.job_id for operation in jobShopEnv.scheduled_operations]
     machine_selection = [

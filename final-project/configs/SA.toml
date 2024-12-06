@@ -1,0 +1,21 @@
+[instance]
+problem_instance = "/jsp/lawrence/la19"
+
+[algorithm]
+population_size = 2    # number of individuals in the population
+ngen = 1000               # number of generations
+seed = 5                # random seed
+indpb = 0.1           # probability of mutating each gene
+cr = 0.7                # probability of mating
+multiprocessing = false  # use multiprocessing for parallel evaluation of individuals (default uses all threads)
+
+[output]
+logbook = true          # display logbook during search
+show_gantt = true       # draw ganttchart of found solution
+save_gantt = true       # save ganttchart to file
+save_results = true     # save results to file
+exp_name = ""           # name of the experiment, used for saving results.
+                        # If empty (""), the name of the problem instance is used
+folder = ""             # folder to save results, used for saving results.
+                        # If empty (""), the results are saved to the current working directory.
+
