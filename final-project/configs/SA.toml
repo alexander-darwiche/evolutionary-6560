@@ -2,12 +2,16 @@
 problem_instance = "/jsp/lawrence/la19"
 
 [algorithm]
-population_size = 2    # number of individuals in the population
+population_size = 1    # number of individuals in the population
 ngen = 1000               # number of generations
 seed = 5                # random seed
 indpb = 0.1           # probability of mutating each gene
 cr = 0.7                # probability of mating
 multiprocessing = false  # use multiprocessing for parallel evaluation of individuals (default uses all threads)
+Tmax = 25000.0      # Max (starting) temperature
+Tmin = 2.5          # Min (ending) temperature
+steps = 50000       # Number of iterations
+updates = 100       # Number of updates (by default an update prints to stdout)
 
 [output]
 logbook = true          # display logbook during search

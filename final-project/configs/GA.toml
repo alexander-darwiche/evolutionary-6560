@@ -3,7 +3,7 @@ problem_instance = "/jsp/lawrence/la19"
 
 [algorithm]
 population_size = 100    # number of individuals in the population
-ngen = 1000               # number of generations
+ngen = 10               # number of generations
 seed = 5                # random seed
 indpb = 0.1           # probability of mutating each gene
 cr = 0.7                # probability of mating

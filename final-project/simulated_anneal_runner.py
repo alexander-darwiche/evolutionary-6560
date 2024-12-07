@@ -30,8 +30,8 @@ plot.show()
 parameters = load_parameters("configs/SA.toml")
 jobShopEnv = load_job_shop_env(parameters['instance'].get('problem_instance'))
 
-population, toolbox, stats, hof = initialize_run(jobShopEnv, **parameters)
-makespan, jobShopEnv = run_SA(jobShopEnv, population, toolbox, stats, hof, **parameters)
+population = initialize_run(jobShopEnv, **parameters)
+makespan, jobShopEnv = run_SA(jobShopEnv, population, **parameters)
 
 plot = plot_gantt_chart(jobShopEnv)
 plot.show()
