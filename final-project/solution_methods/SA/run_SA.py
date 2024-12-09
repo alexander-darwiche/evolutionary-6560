@@ -13,7 +13,7 @@ from solution_methods.SA.src.initialization import initialize_run
 from plotting.drawer import plot_gantt_chart
 
 logging.basicConfig(level=logging.INFO)
-PARAM_FILE = "../../configs/GA.toml"
+PARAM_FILE = "../../configs/SA.toml"
 
 
 def run_SA(jobShopEnv, individual, **kwargs):
@@ -43,8 +43,8 @@ def run_SA(jobShopEnv, individual, **kwargs):
         # Degrade your energy
         print(step)
         
-        # Select a random operation
         import pdb;pdb.set_trace()
+        # Select a random operation
         random_operation = random.choice(jobShopEnv.operations)
         print("Start Time: " + str(random_operation.scheduling_information['start_time']))
         print("End Time: " + str(random_operation.scheduling_information['end_time']))
@@ -75,6 +75,7 @@ def run_SA(jobShopEnv, individual, **kwargs):
         machine.add_operation_to_schedule_backfilling(element,element_end-element_start, jobShopEnv._sequence_dependent_setup_times)
         
         # Update Hall of Fame and statistics with the new generation
+        
 
         # Evaluate "new" schedule
 
