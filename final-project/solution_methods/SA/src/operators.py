@@ -29,19 +29,20 @@ def init_individual(jobShopEnv):
     machine_selection = [(operation.operation_id, sorted(list(operation.processing_times.keys())).index(operation.scheduled_machine)) for operation in jobShopEnv.scheduled_operations]
     machine_selection.sort()
     machine_selection = [allocation for _, allocation in machine_selection]
-    jobShopEnv.reset()
-    return [machine_selection, operation_sequence]
+    return jobShopEnv
 
-def evaluate_individual(individual, jobShopEnv: JobShop, reset=True):
+def evaluate_individual(jobShopEnv: JobShop, reset=False):
+    # import pdb;pdb.set_trace()
     jobShopEnv.reset()
     jobShopEnv.update_operations_available_for_scheduling()
-    for i in range(len(individual[0])):
-        job_id = individual[1][i]
+    for i in range(len(jobShopEnv.operations)):
+        job_id = jobShopEnv.get_operation(i).job_id
+        machine_id = list(jobShopEnv.operations[i].processing_times.keys())[0]
         operation = select_next_operation_from_job(jobShopEnv, job_id)
-        operation_option_index = individual[0][operation.operation_id]
-        machine_id = sorted(operation.processing_times.keys())[operation_option_index]
-        duration = operation.processing_times[machine_id]
-
+        try:
+            duration = operation.processing_times[machine_id]
+        except:
+            import pdb;pdb.set_trace()
         jobShopEnv.schedule_operation_with_backfilling(operation, machine_id, duration)
         jobShopEnv.update_operations_available_for_scheduling()
 
@@ -62,8 +63,6 @@ def variation(population, toolbox, pop_size, cr, indpb):
             else:
                 ind1[0], ind2[0] = toolbox.mate_Uniform(ind1[0], ind2[0])
             
-            has_non_zero = any(x != 0 for x in ind1[0])
-            if (has_non_zero): import pdb;pdb.set_trace()
             ind1[1], ind2[1] = toolbox.mate_POX(ind1[1], ind2[1])
             del ind1.fitness.values, ind2.fitness.values
 

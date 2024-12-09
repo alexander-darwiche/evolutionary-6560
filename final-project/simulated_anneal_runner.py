@@ -12,27 +12,32 @@ jobShopEnv = JobShop()
 parameters = load_parameters("configs/SA.toml")
 jobShopEnv = load_job_shop_env(parameters['instance'].get('problem_instance'))
 
+choices = list()
 # Randomly assign operations to machines
 jobShopEnv.update_operations_available_for_scheduling()
 while len(jobShopEnv.operations_to_be_scheduled) > 0:
     operation = random.choice(jobShopEnv.operations_available_for_scheduling)
+    choices.append(operation.operation_id)
     machine_id = random.choice(list(operation.processing_times.keys()))
     duration = operation.processing_times[machine_id]
     jobShopEnv.schedule_operation_on_machine(operation, machine_id, duration)
     jobShopEnv.update_operations_available_for_scheduling()
 
-print('Makespan:', jobShopEnv.makespan)
+print(choices)
+print(jobShopEnv.makespan)
 
-plot = plot_gantt_chart(jobShopEnv)
-plot.show()
+jobShopEnv.choices = choices
 
+# plot = plot_gantt_chart(jobShopEnv)
+# plot.show()
 
-parameters = load_parameters("configs/SA.toml")
-jobShopEnv = load_job_shop_env(parameters['instance'].get('problem_instance'))
+# parameters = load_parameters("configs/SA.toml")
+# jobShopEnv = load_job_shop_env(parameters['instance'].get('problem_instance'))
 
-individual, fitness = initialize_run(jobShopEnv, **parameters)
-makespan, jobShopEnv = run_SA(jobShopEnv, individual, **parameters)
+# jobShopEnv = initialize_run(jobShopEnv, **parameters)
+makespan, jobShopEnv = run_SA(jobShopEnv, **parameters)
 
+import pdb;pdb.set_trace()
 plot = plot_gantt_chart(jobShopEnv)
 plot.show()
 

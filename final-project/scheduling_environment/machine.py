@@ -47,7 +47,11 @@ class Machine:
             setup_time = \
                 sequence_dependent_setup_times[self.machine_id][self.scheduled_operations[-1].operation_id][
                     operation.operation_id]
-        start_time = max(finishing_time_predecessors, finishing_time_machine + setup_time)
+        
+        try:
+            start_time = max(finishing_time_predecessors, finishing_time_machine + setup_time)
+        except:
+            import pdb;pdb.set_trace()
         operation.add_operation_scheduling_information(self.machine_id, start_time, setup_time, processing_time)
 
         self._processed_operations.append(operation)

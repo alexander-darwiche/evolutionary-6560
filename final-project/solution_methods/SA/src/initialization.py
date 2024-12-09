@@ -39,7 +39,7 @@ def initialize_run(jobShopEnv, **kwargs):
 
     # try:
     #initial_population = init_population(toolbox, kwargs['algorithm']['population_size'], )
-    individual = init_individual(jobShopEnv)
-    fitness, jobShopEnv = evaluate_individual(individual, jobShopEnv)
+    jobShopEnv = init_individual(jobShopEnv)
+    _, jobShopEnv = evaluate_individual(jobShopEnv)
 
-    return individual, fitness
+    return jobShopEnv
