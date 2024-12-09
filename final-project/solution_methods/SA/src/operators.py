@@ -12,42 +12,9 @@ def select_next_operation_from_job(jobShopEnv: JobShop, job_id) -> Operation:
     for operation in jobShopEnv.operations_available_for_scheduling:
         if operation.job_id == job_id:
             return operation
-
-
-def pox_crossover(ind1, ind2, nr_preserving_jobs):
-    preserving_jobs = random.sample(range(1, max(ind1)), nr_preserving_jobs)
-
-    new_sequence_ind1 = list(filter(lambda a: a not in preserving_jobs, ind2))
-    for i in range(len(ind1)):
-        if ind1[i] in preserving_jobs:
-            new_sequence_ind1.insert(i, ind1[i])
-
-    new_sequence_ind2 = list(filter(lambda a: a not in preserving_jobs, ind1))
-    for i in range(len(ind2)):
-        if ind2[i] in preserving_jobs:
-            new_sequence_ind2.insert(i, ind1[i])
-
-    return new_sequence_ind1, new_sequence_ind2
-
-
-def mutate_shortest_proc_time(individual, indpb, jobShopEnv: JobShop):
-    for i, _ in enumerate(individual):
-        if random.random() < indpb:
-            operation = jobShopEnv.operations[i]
-            individual[i] = np.argmin(operation.processing_times)
-    return individual
-
-
-def mutate_sequence_exchange(individual, indpb):
-    for i in range(len(individual)):
-        if random.random() < indpb:
-            j = random.choice([index for index in range(len(individual)) if index != i])
-            individual[i], individual[j] = individual[j], individual[i]
-    return individual
-
-
+        
 # Initialize an individual for the genetic algorithm (with random actions selection heuristic)
-def init_individual(ind_class, jobShopEnv):
+def init_individual(jobShopEnv):
     """create individual, indivial is a list of machine selection (ix of options) and operation sequence (ix of job)"""
 
     rand = random.random()
@@ -57,22 +24,13 @@ def init_individual(ind_class, jobShopEnv):
         jobShopEnv = local_load_balancing_scheduler(jobShopEnv)
     else:  # 10% initial assignment with random scheduler
         jobShopEnv = random_scheduler(jobShopEnv)
-    import pdb;pdb.set_trace()
     # get the operation sequence and machine allocation lists
     operation_sequence = [operation.job_id for operation in jobShopEnv.scheduled_operations]
-    machine_selection = [
-        (operation.operation_id, sorted(list(operation.processing_times.keys())).index(operation.scheduled_machine))
-        for operation in jobShopEnv.scheduled_operations]
+    machine_selection = [(operation.operation_id, sorted(list(operation.processing_times.keys())).index(operation.scheduled_machine)) for operation in jobShopEnv.scheduled_operations]
     machine_selection.sort()
     machine_selection = [allocation for _, allocation in machine_selection]
     jobShopEnv.reset()
-    return ind_class([machine_selection, operation_sequence])
-
-
-# Initialize a population
-def init_population(toolbox, population_size):
-    return [toolbox.init_individual() for _ in range(population_size)]
-
+    return [machine_selection, operation_sequence]
 
 def evaluate_individual(individual, jobShopEnv: JobShop, reset=True):
     jobShopEnv.reset()
@@ -89,26 +47,9 @@ def evaluate_individual(individual, jobShopEnv: JobShop, reset=True):
 
     makespan = jobShopEnv.makespan
 
-    if reset:
-        jobShopEnv.reset()
+    # if reset:
+    #     jobShopEnv.reset()
     return makespan, jobShopEnv
-
-
-def evaluate_population(toolbox, population):
-    # start_time = time.time()
-
-    
-    # sequential evaluation of population
-    population = [[ind[0], ind[1]] for ind in population]
-    fitnesses = [toolbox.evaluate_individual(ind) for ind in population]
-    fitnesses = [(fit[0],) for fit in fitnesses]
-
-    # parallel evaluation of population
-    # population = [[ind[0], ind[1]] for ind in population]
-    # fitnesses = toolbox.map(toolbox.evaluate_individual, population)
-    # fitnesses = [(fit[0],) for fit in fitnesses]
-
-    return fitnesses
 
 def variation(population, toolbox, pop_size, cr, indpb):
     offspring = []

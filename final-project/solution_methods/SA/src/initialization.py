@@ -8,8 +8,7 @@ import numpy as np
 from deap import base, creator, tools
 
 from solution_methods.SA.src.operators import (
-    evaluate_individual, evaluate_population, init_individual,
-    mutate_sequence_exchange, mutate_shortest_proc_time, pox_crossover)
+    evaluate_individual, init_individual)
 from solution_methods.helper_functions import set_seeds
 
 
@@ -43,6 +42,4 @@ def initialize_run(jobShopEnv, **kwargs):
     individual = init_individual(jobShopEnv)
     fitness, jobShopEnv = evaluate_individual(individual, jobShopEnv)
 
-    import pdb;pdb.set_trace()
-
-    return individual
+    return individual, fitness

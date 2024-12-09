@@ -1,0 +1,27 @@
+{
+    "files.associations": {
+        "string.h": "c",
+        "stdio.h": "c",
+        "array": "c",
+        "chrono": "c",
+        "deque": "c",
+        "forward_list": "c",
+        "list": "c",
+        "string": "c",
+        "unordered_map": "c",
+        "unordered_set": "c",
+        "vector": "c",
+        "iterator": "c",
+        "string_view": "c",
+        "format": "c",
+        "span": "c",
+        "regex": "c",
+        "typeindex": "c",
+        "typeinfo": "c",
+        "complex": "c",
+        "bitset": "c",
+        "initializer_list": "c",
+        "valarray": "c",
+        "functional": "c"
+    }
+}
