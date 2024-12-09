@@ -122,7 +122,7 @@ def variation(population, toolbox, pop_size, cr, indpb):
                 ind1[0], ind2[0] = toolbox.mate_Uniform(ind1[0], ind2[0])
             
             has_non_zero = any(x != 0 for x in ind1[0])
-            if (has_non_zero): import pdb;pdb.set_trace()
+
             ind1[1], ind2[1] = toolbox.mate_POX(ind1[1], ind2[1])
             del ind1.fitness.values, ind2.fitness.values
 

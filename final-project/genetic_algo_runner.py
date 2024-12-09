@@ -14,7 +14,6 @@ jobShopEnv = load_job_shop_env(parameters['instance'].get('problem_instance'))
 
 jobShopEnv.update_operations_available_for_scheduling()
 while len(jobShopEnv.operations_to_be_scheduled) > 0:
-    # import pdb;pdb.set_trace()
     operation = random.choice(jobShopEnv.operations_available_for_scheduling)
     machine_id = random.choice(list(operation.processing_times.keys()))
     duration = operation.processing_times[machine_id]
@@ -30,7 +29,6 @@ plot.show()
 parameters = load_parameters("configs/GA.toml")
 jobShopEnv = load_job_shop_env(parameters['instance'].get('problem_instance'))
 
-# import pdb;pdb.set_trace()
 population, toolbox, stats, hof = initialize_run(jobShopEnv, **parameters)
 makespan, jobShopEnv = run_GA(jobShopEnv, population, toolbox, stats, hof, **parameters)
 
