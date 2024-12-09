@@ -49,7 +49,6 @@ def run_GA(jobShopEnv, population, toolbox, stats, hof, **kwargs):
                               pop_size=kwargs['algorithm'].get('population_size'),
                               cr = kwargs['algorithm'].get('cr'),
                               indpb = kwargs['algorithm'].get('indpb'))
-
         # Repair precedence constraints if the environment requires it (only for assembly scheduling (fajsp))
         if any(keyword in jobShopEnv.instance_name for keyword in ['/dafjs/', '/yfjs/']):
             try:
@@ -64,6 +63,7 @@ def run_GA(jobShopEnv, population, toolbox, stats, hof, **kwargs):
             for ind, fit in zip(offspring, fitnesses):
                 ind.fitness.values = fit
         except Exception as e:
+            import pdb; pdb.set_trace()
             logging.error(f"Error evaluating offspring fitness: {e}")
             continue
 

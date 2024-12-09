@@ -1,7 +1,7 @@
 import random
-
+from collections import Counter
 import numpy as np
-
+from deap import tools
 from scheduling_environment.jobShop import JobShop
 from scheduling_environment.operation import Operation
 from solution_methods.GA.src.heuristics import global_load_balancing_scheduler, local_load_balancing_scheduler, random_scheduler
@@ -57,7 +57,7 @@ def init_individual(ind_class, jobShopEnv):
         jobShopEnv = local_load_balancing_scheduler(jobShopEnv)
     else:  # 10% initial assignment with random scheduler
         jobShopEnv = random_scheduler(jobShopEnv)
-    import pdb;pdb.set_trace()
+    #import pdb;pdb.set_trace()
     # get the operation sequence and machine allocation lists
     operation_sequence = [operation.job_id for operation in jobShopEnv.scheduled_operations]
     machine_selection = [
@@ -75,17 +75,23 @@ def init_population(toolbox, population_size):
 
 
 def evaluate_individual(individual, jobShopEnv: JobShop, reset=True):
+
     jobShopEnv.reset()
     jobShopEnv.update_operations_available_for_scheduling()
+    if individual == None:
+        import pdb; pdb.set_trace()
     for i in range(len(individual[0])):
-        job_id = individual[1][i]
-        operation = select_next_operation_from_job(jobShopEnv, job_id)
-        operation_option_index = individual[0][operation.operation_id]
-        machine_id = sorted(operation.processing_times.keys())[operation_option_index]
-        duration = operation.processing_times[machine_id]
+        try:
+            job_id = individual[1][i]
+            operation = select_next_operation_from_job(jobShopEnv, job_id)
+            operation_option_index = individual[0][operation.operation_id]
+            machine_id = sorted(operation.processing_times.keys())[operation_option_index]
+            duration = operation.processing_times[machine_id]
 
-        jobShopEnv.schedule_operation_with_backfilling(operation, machine_id, duration)
-        jobShopEnv.update_operations_available_for_scheduling()
+            jobShopEnv.schedule_operation_with_backfilling(operation, machine_id, duration)
+            jobShopEnv.update_operations_available_for_scheduling()
+        except: 
+            import pdb; pdb.set_trace()
 
     makespan = jobShopEnv.makespan
 
@@ -97,7 +103,6 @@ def evaluate_individual(individual, jobShopEnv: JobShop, reset=True):
 def evaluate_population(toolbox, population):
     # start_time = time.time()
 
-    
     # sequential evaluation of population
     population = [[ind[0], ind[1]] for ind in population]
     fitnesses = [toolbox.evaluate_individual(ind) for ind in population]
@@ -116,32 +121,55 @@ def variation(population, toolbox, pop_size, cr, indpb):
         op_choice = random.random()
         if op_choice < cr:  # Apply crossover
             ind1, ind2 = list(map(toolbox.clone, random.sample(population, 2)))
-            if random.random() < 0.5:
-                ind1[0], ind2[0] = toolbox.mate_TwoPoint(ind1[0], ind2[0])
+
+            # Randomly select a crossover operator
+            crossover_choice = random.choice([
+                "mate_TwoPoint",
+                "mate_Uniform",
+                "mate_POX",
+                "mate_Order",
+                "mate_Cycle"
+            ])
+            #import pdb; pdb.set_trace()
+            if crossover_choice in ["mate_Order", "mate_Cycle", "mate_POX"]:
+                ind1[1], ind2[1] = getattr(toolbox, crossover_choice)(ind1[1], ind2[1])
             else:
-                ind1[0], ind2[0] = toolbox.mate_Uniform(ind1[0], ind2[0])
-            
-            has_non_zero = any(x != 0 for x in ind1[0])
-            if (has_non_zero): import pdb;pdb.set_trace()
-            ind1[1], ind2[1] = toolbox.mate_POX(ind1[1], ind2[1])
+                ind1[0], ind2[0] = getattr(toolbox, crossover_choice)(ind1[0], ind2[0])
+
+            # Validate crossover results
+            if None in ind1[1] or None in ind2[1]:
+                raise ValueError(f"Crossover resulted in None values: ind1={ind1}, ind2={ind2}")
+
             del ind1.fitness.values, ind2.fitness.values
 
         else:  # Apply reproduction
             ind1 = toolbox.clone(random.choice(population))
-            # ind2 = toolbox.clone(random.choice(population))
 
-        # Apply mutation
-        ind1[0] = toolbox.mutate_machine_selection(ind1[0], indpb)
-        ind1[1] = toolbox.mutate_operation_sequence(ind1[1], indpb)
-        # ind2[0] = toolbox.mutate_machine_selection(ind2[0])
-        # ind2[1] = toolbox.mutate_operation_sequence(ind2[1])
+        # Randomly select a mutation operator for machine selection
+        machine_mutation_choice = random.choice([
+            "mutate_machine_selection",
+            "mutate_Scramble",
+            "mutate_Inversion"
+        ])
+        ind1[0] = getattr(toolbox, machine_mutation_choice)(ind1[0], indpb)
+
+        # Randomly select a mutation operator for operation sequence
+        sequence_mutation_choice = random.choice([
+            "mutate_operation_sequence",
+            "mutate_Scramble",
+            "mutate_Inversion"
+        ])
+        ind1[1] = getattr(toolbox, sequence_mutation_choice)(ind1[1], indpb)
+
+        # Validate mutation results
+        if None in ind1[0] or None in ind1[1]:
+            raise ValueError(f"Mutation resulted in None values: ind1={ind1}")
 
         del ind1.fitness.values
-        # del ind2.fitness.values
         offspring.append(ind1)
-        # offspring.append(ind2)
 
     return offspring
+
 
 
 def repair_precedence_constraints(env, offspring):
@@ -165,3 +193,76 @@ def repair_precedence_constraints(env, offspring):
                     continue
             i += 1
     return offspring
+
+from deap import tools
+
+def repair_child(child, value_range, max_count):     
+    # Count occurrences of each value in the child    
+    value_counts = Counter(child)        
+    # # Find missing and excess values    
+    missing = [v for v in value_range if value_counts[v] < max_count]     
+    excess = [v for v in value_range if value_counts[v] > max_count]         
+    # Create a list of indices for excess values    
+    excess_indices = [i for i, v in enumerate(child) if v in excess]         
+    # Replace excess values with missing ones
+    for i in excess_indices: 
+        #import pdb; pdb.set_trace()
+        value = child[i] 
+        if value_counts[value] > max_count and missing: 
+            new_value = missing[0] 
+            child[i] = new_value 
+            value_counts[value] -= 1 
+            value_counts[new_value] += 1
+            if value_counts[new_value] == max_count:
+                missing.remove(new_value)
+    return child
+
+def order_crossover(parent1, parent2):
+    p1_list = list(parent1)
+    p2_list = list(parent2)
+    tools.cxOrdered(p1_list, p2_list)
+    value_range = list(range(10))  # Values 0–9    
+    max_count = 10  # Each value must appear 10 times
+    # Repair children 
+    p1_list[:] = repair_child(p1_list, value_range, max_count) 
+    p2_list[:] = repair_child(p2_list, value_range, max_count)
+    return p1_list, p2_list
+
+
+def cycle_crossover(parent1, parent2):
+    child1, child2 = [None] * len(parent1), [None] * len(parent2)
+    visited = [False] * len(parent1)
+
+    cycle_start = 0
+    while not all(visited):  
+        if visited[cycle_start]:
+            cycle_start = visited.index(False)  
+
+        index = cycle_start
+        while not visited[index]:
+            visited[index] = True
+            child1[index] = parent1[index]
+            child2[index] = parent2[index]
+            index = parent1.index(parent2[index])
+
+    child1 = [p2 if c1 is None else c1 for c1, p2 in zip(child1, parent2)]
+    child2 = [p1 if c2 is None else c2 for c2, p1 in zip(child2, parent1)]
+
+    if None in child1 or None in child2:
+        raise ValueError(f"Cycle crossover produced invalid offspring: {child1}, {child2}")
+
+    return child1, child2
+
+
+
+def mutate_scramble(individual, indpb):
+    if random.random() < indpb:
+        start, end = sorted(random.sample(range(len(individual)), 2))
+        individual[start:end] = random.sample(individual[start:end], len(individual[start:end]))
+    return individual
+
+def mutate_inversion(individual, indpb):
+    if random.random() < indpb:
+        start, end = sorted(random.sample(range(len(individual)), 2))
+        individual[start:end] = individual[start:end][::-1]
+    return individual

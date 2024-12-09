@@ -9,7 +9,7 @@ from deap import base, creator, tools
 
 from solution_methods.GA.src.operators import (
     evaluate_individual, evaluate_population, init_individual, init_population,
-    mutate_sequence_exchange, mutate_shortest_proc_time, pox_crossover)
+    mutate_sequence_exchange, mutate_shortest_proc_time, pox_crossover, order_crossover, cycle_crossover, mutate_scramble, mutate_inversion)
 from solution_methods.helper_functions import set_seeds
 
 
@@ -61,7 +61,10 @@ def initialize_run(jobShopEnv, **kwargs):
     toolbox.register("mutate_operation_sequence", mutate_sequence_exchange)
     toolbox.register("select", tools.selTournament, k=kwargs['algorithm']['population_size'], tournsize=3)
     toolbox.register("evaluate_individual", evaluate_individual, jobShopEnv=jobShopEnv)
-
+    toolbox.register("mate_Order", order_crossover)  # Order Crossover
+    toolbox.register("mate_Cycle", cycle_crossover)  # Cycle Crossover
+    toolbox.register("mutate_Scramble", mutate_scramble)
+    toolbox.register("mutate_Inversion", mutate_inversion)
     # Setup statistics tracking
     stats = tools.Statistics(lambda ind: ind.fitness.values)
     stats.register("avg", np.mean, axis=0)
