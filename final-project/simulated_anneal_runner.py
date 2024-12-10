@@ -17,7 +17,7 @@ choices = list()
 jobShopEnv.update_operations_available_for_scheduling()
 while len(jobShopEnv.operations_to_be_scheduled) > 0:
     operation = random.choice(jobShopEnv.operations_available_for_scheduling)
-    choices.append(operation.operation_id)
+    choices.append(operation.job_id)
     machine_id = random.choice(list(operation.processing_times.keys()))
     duration = operation.processing_times[machine_id]
     jobShopEnv.schedule_operation_on_machine(operation, machine_id, duration)

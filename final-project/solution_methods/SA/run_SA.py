@@ -9,6 +9,7 @@ from solution_methods.helper_functions import load_parameters, load_job_shop_env
 from solution_methods.SA.src.operators import (evaluate_individual, repair_precedence_constraints, variation)
 from solution_methods.SA.utils import record_stats, output_dir_exp_name, results_saving
 from solution_methods.SA.src.initialization import initialize_run
+import numpy as np
 
 from plotting.drawer import plot_gantt_chart
 
@@ -30,71 +31,17 @@ def run_SA(jobShopEnv, **kwargs):
     Returns:
         The best individual found by the genetic algorithm.
     """
-
-    # for machine in jobShopEnv.machines:
-    #     machine_operations = sorted(machine._processed_operations, key=lambda op: op.scheduling_information['start_time'])
-    #     for operation in machine_operations:
-    #         operation_start = operation.scheduling_information['start_time']
-    #         operation_end = operation.scheduling_information['end_time']
-    #         operation_duration = operation_end - operation_start
-
+    
     # Initial population setup for Hall of Fame and statistics
     for step in range(1, kwargs['algorithm']['steps'] + 1):
         # Degrade your energy
-        print(step)
         
         # # Select a random operation
-        # random_operation = random.choice(jobShopEnv.operations)
-
-        # machine_id = random_operation.scheduling_information['machine_id']
-        # start = random_operation.scheduling_information['start_time']
-        # end = random_operation.scheduling_information['end_time']
-
-        # # Determine all possible places that neighbor operations
-        # machine = jobShopEnv.get_machine(machine_id)
-        # machine_operations = sorted(machine._processed_operations, key=lambda op: op.scheduling_information['start_time'])
-
-        # before_flag = False
-        # for operation in machine_operations:
-        #     if operation.scheduling_information['start_time'] < start:
-        #         element = operation
-        #         before_flag = True
-        
-        # end_flag = False
-        # counter = 0
-        # for operation in machine_operations:
-        #     if operation.scheduling_information['start_time'] > start:
-        #         if counter == 0:
-        #             element2 = operation
-        #             end_flag = True
-        #             counter = counter + 1
-
-
-        # # Swap operation with randomly selected location
-        # try:
-        #     if before_flag:
-        #         print("Swapping on machine: ",str(machine_id))
-        #         element_start = element.scheduling_information['start_time']
-        #         element_end = element.scheduling_information['end_time']
-        #         machine.unschedule_operation(random_operation)
-        #         machine.unschedule_operation(element)
-
-        #         machine.add_operation_to_schedule(random_operation,end-start, jobShopEnv._sequence_dependent_setup_times)
-        #         machine.add_operation_to_schedule(element,element_end-element_start, jobShopEnv._sequence_dependent_setup_times)
-        #     elif end_flag:
-        #         print("Swapping on machine: ",str(machine_id))
-        #         element_start2 = element2.scheduling_information['start_time']
-        #         element_end2 = element2.scheduling_information['end_time']
-        #         machine.unschedule_operation(random_operation)
-        #         machine.unschedule_operation(element2)
-
-        #         machine.add_operation_to_schedule(element2,element_end2-element_start2, jobShopEnv._sequence_dependent_setup_times)
-        #         machine.add_operation_to_schedule(random_operation,end-start, jobShopEnv._sequence_dependent_setup_times)
-        # except:
-        #     import pdb;pdb.set_trace()
-
-        # # jobShopEnv.repair
         choices = jobShopEnv.choices
+        
+        # Copy JobShopEnv
+        from copy import deepcopy
+        
         # Randomly select two distinct indices
         try:
             index1 = random.randint(0, len(choices) - 2)  # Ensure there's a next index
@@ -105,39 +52,50 @@ def run_SA(jobShopEnv, **kwargs):
         # Swap the values
         choices[index1], choices[index2] = choices[index2], choices[index1]
 
-        print(index1)
-        print(index2)
         # Randomly assign operations to machines
         counter = 0
-        jobShopEnv.reset()
-        jobShopEnv.update_operations_available_for_scheduling()
-        import pdb;pdb.set_trace()
-        while len(jobShopEnv.operations_to_be_scheduled) > 0:
+
+        simEnv = deepcopy(jobShopEnv)
+        simEnv.reset()
+        simEnv.update_operations_available_for_scheduling()
+
+        while len(simEnv.operations_to_be_scheduled) > 0:
             # operation = jobShopEnv.get_operation(choices[counter])
-            operation = random.choice(jobShopEnv.operations_available_for_scheduling)
+            op_id = next(
+                (i.operation_id for i in simEnv.operations_available_for_scheduling
+                if i.job_id == choices[counter]),
+                None  # Default value if no match is found
+            )
+            operation = simEnv.get_operation(op_id)
             machine_id = random.choice(list(operation.processing_times.keys()))
             duration = operation.processing_times[machine_id]
             try:
-                jobShopEnv.schedule_operation_on_machine(operation, machine_id, duration)
+                simEnv.schedule_operation_on_machine(operation, machine_id, duration)
             except:
                 import pdb;pdb.set_trace()
-            jobShopEnv.update_operations_available_for_scheduling()
+            simEnv.update_operations_available_for_scheduling()
             counter = counter+1
 
-        jobShopEnv.choices = choices
+        simEnv.choices = choices
 
-        print('Makespan:', jobShopEnv.makespan)
+        
 
+        # Temperature schedule (example: exponential decay)
+        def temperature_schedule(t):
+            return max(1e-3, 10 * np.exp(-0.03 * t))
+        
+        # Temperature based on the schedule
+        temperature = temperature_schedule(step)
+
+        # Difference in the 2 schedules
+        difference = simEnv.makespan - jobShopEnv.makespan
+        if difference < 0: #or random.random() < np.exp((difference) / temperature):
+            jobShopEnv = deepcopy(simEnv)
+            # print('Swap occured on Step: ', step)
+            # print('Makespan:', jobShopEnv.makespan)
+        
+        if step%100 == 0:
+            print('Step: ',str(step))
+            print('Makespan:', jobShopEnv.makespan)
         # plot = plot_gantt_chart(jobShopEnv)
         # plot.show(block=False)
-
-        # import pdb;pdb.set_trace()
-        # Update Hall of Fame and statistics with the new generation
-
-
-        # Evaluate "new" schedule
-
-        # Swap to new schedule if better, with some probability
-        # Schedule A: 100
-        # Schedule B: 105
-        # You choose schedule B, 75% + (1/energy)
