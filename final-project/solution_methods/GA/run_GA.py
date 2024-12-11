@@ -73,6 +73,7 @@ def run_GA(jobShopEnv, population, toolbox, stats, hof, **kwargs):
         # Update Hall of Fame and statistics with the new generation
         hof.update(population)
         record_stats(gen, population, logbook, stats, kwargs['output']['logbook'], df_list, logging)
+        jobShopEnv.fitness.append(hof[0].fitness.values[0])
 
     makespan, jobShopEnv = evaluate_individual(hof[0], jobShopEnv, reset=False)
     logging.info(f"Makespan: {makespan}")

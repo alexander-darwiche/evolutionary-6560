@@ -54,17 +54,21 @@ def initialize_run(jobShopEnv, **kwargs):
 
     # Register individual and genetic operators
     toolbox.register("init_individual", init_individual, creator.Individual, jobShopEnv=jobShopEnv)
+
+    toolbox.register("select", tools.selTournament, k=kwargs['algorithm']['population_size'], tournsize=3)
+    toolbox.register("evaluate_individual", evaluate_individual, jobShopEnv=jobShopEnv)
+    
+    toolbox.register("mate_Order", order_crossover)  # Order Crossover
+    toolbox.register("mate_Cycle", cycle_crossover)  # Cycle Crossover
     toolbox.register("mate_TwoPoint", tools.cxTwoPoint)
     toolbox.register("mate_Uniform", tools.cxUniform, indpb=0.5)
     toolbox.register("mate_POX", pox_crossover, nr_preserving_jobs=1)
+
     toolbox.register("mutate_machine_selection", mutate_shortest_proc_time, jobShopEnv=jobShopEnv)
     toolbox.register("mutate_operation_sequence", mutate_sequence_exchange)
-    toolbox.register("select", tools.selTournament, k=kwargs['algorithm']['population_size'], tournsize=3)
-    toolbox.register("evaluate_individual", evaluate_individual, jobShopEnv=jobShopEnv)
-    toolbox.register("mate_Order", order_crossover)  # Order Crossover
-    toolbox.register("mate_Cycle", cycle_crossover)  # Cycle Crossover
     toolbox.register("mutate_Scramble", mutate_scramble)
     toolbox.register("mutate_Inversion", mutate_inversion)
+
     # Setup statistics tracking
     stats = tools.Statistics(lambda ind: ind.fitness.values)
     stats.register("avg", np.mean, axis=0)

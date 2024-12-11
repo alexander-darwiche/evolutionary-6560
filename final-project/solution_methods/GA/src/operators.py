@@ -5,7 +5,7 @@ from deap import tools
 from scheduling_environment.jobShop import JobShop
 from scheduling_environment.operation import Operation
 from solution_methods.GA.src.heuristics import global_load_balancing_scheduler, local_load_balancing_scheduler, random_scheduler
-
+from solution_methods.helper_functions import load_job_shop_env, load_parameters
 
 def select_next_operation_from_job(jobShopEnv: JobShop, job_id) -> Operation:
     # select next operation for job
@@ -84,7 +84,8 @@ def evaluate_individual(individual, jobShopEnv: JobShop, reset=True):
         try:
             job_id = individual[1][i]
             operation = select_next_operation_from_job(jobShopEnv, job_id)
-            operation_option_index = individual[0][operation.operation_id]
+            operation_option_index = individual[0][operation.operation_id] if len(sorted(operation.processing_times.keys())) - 1>= individual[0][operation.operation_id]  else 0
+            
             machine_id = sorted(operation.processing_times.keys())[operation_option_index]
             duration = operation.processing_times[machine_id]
 
@@ -156,8 +157,6 @@ def variation(population, toolbox, pop_size, cr, indpb):
         # Randomly select a mutation operator for operation sequence
         sequence_mutation_choice = random.choice([
             "mutate_operation_sequence",
-            "mutate_Scramble",
-            "mutate_Inversion"
         ])
         ind1[1] = getattr(toolbox, sequence_mutation_choice)(ind1[1], indpb)
 
@@ -169,8 +168,6 @@ def variation(population, toolbox, pop_size, cr, indpb):
         offspring.append(ind1)
 
     return offspring
-
-
 
 def repair_precedence_constraints(env, offspring):
     precedence_relations = env.precedence_relations_jobs
@@ -196,36 +193,46 @@ def repair_precedence_constraints(env, offspring):
 
 from deap import tools
 
-def repair_child(child, value_range, max_count):     
+def repair_child(child):     
     # Count occurrences of each value in the child    
+    max_count = find_number_operations(load_job_shop_env(load_parameters("configs/GA.toml")['instance'].get('problem_instance')))
+    value_range = range(len(max_count))
     value_counts = Counter(child)        
     # # Find missing and excess values    
-    missing = [v for v in value_range if value_counts[v] < max_count]     
-    excess = [v for v in value_range if value_counts[v] > max_count]         
+    missing = [v for v in value_range if value_counts[v] < max_count[v]]     
+    excess = [v for v in value_range if value_counts[v] > max_count[v]]         
     # Create a list of indices for excess values    
     excess_indices = [i for i, v in enumerate(child) if v in excess]         
     # Replace excess values with missing ones
     for i in excess_indices: 
         #import pdb; pdb.set_trace()
         value = child[i] 
-        if value_counts[value] > max_count and missing: 
+        if value_counts[value] > max_count[value] and missing: 
             new_value = missing[0] 
             child[i] = new_value 
             value_counts[value] -= 1 
             value_counts[new_value] += 1
-            if value_counts[new_value] == max_count:
+            if value_counts[new_value] == max_count[new_value]:
                 missing.remove(new_value)
     return child
+
+def find_number_operations(jobShopEnv: JobShop):
+    counts = dict()
+    for job in jobShopEnv.jobs:
+        count = 0
+        for operation in job.operations:
+            count += 1
+        counts[job.job_id] = count
+    return counts
 
 def order_crossover(parent1, parent2):
     p1_list = list(parent1)
     p2_list = list(parent2)
     tools.cxOrdered(p1_list, p2_list)
-    value_range = list(range(10))  # Values 0–9    
-    max_count = 10  # Each value must appear 10 times
+    #max_count = 10  # Each value must appear 10 times
     # Repair children 
-    p1_list[:] = repair_child(p1_list, value_range, max_count) 
-    p2_list[:] = repair_child(p2_list, value_range, max_count)
+    p1_list[:] = repair_child(p1_list) 
+    p2_list[:] = repair_child(p2_list)
     return p1_list, p2_list
 
 
