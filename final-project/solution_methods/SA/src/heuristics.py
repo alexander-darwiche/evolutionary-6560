@@ -152,3 +152,26 @@ def global_load_balancing_scheduler_SA(jobShop: JobShop) -> JobShop:
     jobShop.choices = choices
     jobShop.machine_choices = machine_choices
     return jobShop
+
+
+def random_scheduler_SA(jobShop: JobShop) -> JobShop:
+    """Randomly assign jobs to machines.
+
+    :param env: The environment where jobs need to be.
+    :return: The environment after jobs have been assigned.
+    """
+    choices = list()
+    machine_choices = list()
+    jobShop.update_operations_available_for_scheduling()
+    while len(jobShop.operations_to_be_scheduled) > 0:
+        operation = random.choice(jobShop.operations_available_for_scheduling)
+        machine_id = random.choice(list(operation.processing_times.keys()))
+        duration = operation.processing_times[machine_id]
+        choices.append(operation.job_id)
+        machine_choices.append(machine_id)
+        jobShop.schedule_operation_on_machine(operation, machine_id, duration)
+        jobShop.update_operations_available_for_scheduling()
+    
+    jobShop.choices = choices
+    jobShop.machine_choices = machine_choices
+    return jobShop

@@ -55,7 +55,7 @@ def run_SA(jobShopEnv, **kwargs):
             except: import pdb;pdb.set_trace()
             machine_id = random.choice(list(operation.processing_times.keys()))
             duration = operation.processing_times[machine_id]
-            simEnv.schedule_operation_on_machine(operation, machine_id, duration)
+            simEnv.schedule_operation_with_backfilling(operation, machine_id, duration)
             simEnv.update_operations_available_for_scheduling()
             counter = counter+1
 
@@ -76,25 +76,15 @@ def run_SA(jobShopEnv, **kwargs):
             jobShopEnv = deepcopy(simEnv)
             total_swaps = total_swaps+1
 
-        if step%100 == 0:
-            print("Temperature: "+str(temperature*((jobShopEnv.makespan/100)/np.max([1,abs(difference)]))))
-            print('Step: ',str(step))
-            print('Makespan:', jobShopEnv.makespan)
-            print('Total Swaps: ',str(total_swaps))
+        # if step%100 == 0:
+        #     print("Temperature: "+str(temperature*((jobShopEnv.makespan/100)/np.max([1,abs(difference)]))))
+        #     print('Step: ',str(step))
+        #     print('Makespan:', jobShopEnv.makespan)
+        #     print('Total Swaps: ',str(total_swaps))
         
 
         jobShopEnv.fitness.append(jobShopEnv.makespan)
 
-    plot = plot_gantt_chart(jobShopEnv)
-    plot.show()
-
-    # Plot the values
-    plt.plot(jobShopEnv.fitness)
-    plt.xlabel('Step')
-    plt.ylabel('Value')
-    plt.title('Plot of Values')
-    plt.grid(True)
-    plt.show()
     return jobShopEnv
 
 
