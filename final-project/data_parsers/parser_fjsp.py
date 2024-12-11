@@ -41,6 +41,7 @@ def parse_fjsp(JobShop, instance, from_absolute_path=False):
             while i < len(parsed_line):
                 # Total number of operation options for the operation
                 operation_options = int(parsed_line[i])
+
                 # Current activity
                 operation = Operation(job, job_id, operation_id)
 

@@ -1,5 +1,6 @@
 [instance]
 problem_instance = "/jsp/lawrence/la19"
+problem_instance2 = "/fjsp/1_Brandimarte/Mk01.fjs"
 
 [algorithm]
 population_size = 1    # number of individuals in the population
@@ -10,7 +11,7 @@ cr = 0.7                # probability of mating
 multiprocessing = false  # use multiprocessing for parallel evaluation of individuals (default uses all threads)
 Tmax = 25000.0      # Max (starting) temperature
 Tmin = 2.5          # Min (ending) temperature
-steps = 1000000       # Number of iterations
+steps = 5000       # Number of iterations
 updates = 100       # Number of updates (by default an update prints to stdout)
 
 [output]

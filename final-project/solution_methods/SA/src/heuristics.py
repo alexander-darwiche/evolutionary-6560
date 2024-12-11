@@ -112,3 +112,43 @@ def global_load_balancing_scheduler(jobShop: JobShop) -> JobShop:
         jobs_to_be_scheduled.remove(job.job_id)
 
     return jobShop
+
+
+def global_load_balancing_scheduler_SA(jobShop: JobShop) -> JobShop:
+    """ global load balancing scheduler
+
+    :param env: The environment where jobs need to be.
+    :return: The environment after jobs have been assigned.
+    """
+    choices = list()
+    machine_choices = list()
+    jobs_to_be_scheduled = [job_id for job_id in range(jobShop.nr_of_jobs)]
+    machine_occupation_times = {machine.machine_id: 0 for machine in jobShop.machines}
+    jobShop.update_operations_available_for_scheduling()
+
+    while jobs_to_be_scheduled != []:
+        jobs_available_for_scheduling = list(
+            set(operation.job for operation in jobShop.operations_available_for_scheduling))
+        job = random.choice(jobs_available_for_scheduling)
+        for operation in job.operations:
+            updated_occupation_times = {}
+            for machine_id in operation.processing_times.keys():
+                if machine_id not in updated_occupation_times:
+                    updated_occupation_times[machine_id] = operation.processing_times[machine_id]
+                else:
+                    updated_occupation_times[machine_id] += operation.processing_times[machine_id]
+
+            machine_id = min(updated_occupation_times.items(), key=lambda x: x[1])[0]
+            duration = operation.processing_times[machine_id]
+            choices.append(operation.job_id)
+            machine_choices.append(machine_id)
+            jobShop.schedule_operation_with_backfilling(operation, machine_id, duration)
+
+            machine_occupation_times[machine_id] += duration
+            jobShop.update_operations_available_for_scheduling()
+
+        jobs_to_be_scheduled.remove(job.job_id)
+
+    jobShop.choices = choices
+    jobShop.machine_choices = machine_choices
+    return jobShop
